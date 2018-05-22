@@ -12,7 +12,7 @@ from utils import progress_bar, summary
 from hardcodedmodels import HiResA
 from torch.optim.lr_scheduler import MultiStepLR
 
-try_no = 1
+try_no = 2
 
 
 if __name__ == '__main__':
