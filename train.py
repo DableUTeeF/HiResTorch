@@ -8,8 +8,8 @@ import torch.utils.data
 import torch.utils.data.distributed
 import torchvision.transforms as transforms
 from torchvision.datasets.cifar import CIFAR10
-from utils import progress_bar
-from models import HiResA
+from utils import progress_bar, summary
+from hardcodedmodels import HiResA
 from torch.optim.lr_scheduler import MultiStepLR
 
 try_no = 1
@@ -40,9 +40,7 @@ if __name__ == '__main__':
     device = 'cuda'
     model = HiResA([3, 3, 3])
     model = torch.nn.DataParallel(model).cuda()
-
-    lambda1 = lambda epoch: epoch // 100
-    lambda2 = lambda epoch: 0.95 ** epoch
+    summary((3, 32, 32), model)
     criterion = nn.CrossEntropyLoss().cuda()
     optimizer = torch.optim.SGD(model.parameters(), 1e-2,
                                 momentum=0.9,
