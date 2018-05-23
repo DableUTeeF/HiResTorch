@@ -249,3 +249,67 @@ class HiResC(nn.Module):
         out = path.view(path.size(0), -1)
         out = self.linear(out)
         return out
+
+
+class HiResD(nn.Module):
+    def __init__(self, num_blocks, num_classes=10):
+        super(HiResD, self).__init__()
+
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=5, stride=1, padding=0, bias=False)
+        self.bn1 = nn.BatchNorm2d(64)
+        self.layer1_1 = BasicBlock(64, 64)
+        self.layer1_2 = BasicBlock(64, 64)
+        self.layer1_3 = BasicBlock(64, 64)
+        self.layer2_1 = BasicBlock(64, 128)
+        self.layer2_2 = BasicBlock(128, 128)
+        self.layer2_3 = BasicBlock(128, 128)
+        self.layer3_1 = BasicBlock(128, 256)
+        self.layer3_2 = BasicBlock(256, 256)
+        self.layer3_3 = BasicBlock(256, 256)
+        self.linear = nn.Linear(256, num_classes)
+
+    def forward(self, x):
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = F.relu(out)
+        path = F.avg_pool2d(out, 28)
+        out = self.layer1_1(out)
+        path += F.avg_pool2d(out, 28)
+        out = F.relu(out)
+        out = self.layer1_2(out)
+        path += F.avg_pool2d(out, 28)
+        out = F.relu(out)
+        out = self.layer1_3(out)
+        # path += F.avg_pool2d(out, 28)
+        path = torch.cat((path, F.avg_pool2d(out, 28)), 1)
+        out = F.relu(out)
+        out = F.max_pool2d(out, 2)
+
+        out = self.layer2_1(out)
+        path += F.avg_pool2d(out, 14)
+        out = F.relu(out)
+        out = self.layer2_2(out)
+        path += F.avg_pool2d(out, 14)
+        out = F.relu(out)
+        out = self.layer2_3(out)
+        # path += F.avg_pool2d(out, 14)
+        path = torch.cat((path, F.avg_pool2d(out, 14)), 1)
+        out = F.relu(out)
+        # path += F.avg_pool2d(out, 14)
+
+        out = F.max_pool2d(out, 2)
+        out = self.layer3_1(out)
+        path += F.avg_pool2d(out, 7)
+        out = F.relu(out)
+        out = self.layer3_2(out)
+        path += F.avg_pool2d(out, 7)
+        out = F.relu(out)
+        out = self.layer3_3(out)
+        # path = torch.cat((path, F.avg_pool2d(out, 7)), 1)
+        path += F.avg_pool2d(out, 7)
+        path = F.relu(path)
+
+        # out = F.avg_pool2d(path, 4)
+        out = path.view(path.size(0), -1)
+        out = self.linear(out)
+        return out
