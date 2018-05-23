@@ -3,4 +3,4 @@
 2       HiResA          91.35 @ 200
 3       HiResB          92.31 @ 294
 *       Res20           93.44 @ 197
-4       HiResC
+4       HiResC20

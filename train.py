@@ -10,7 +10,8 @@ import torch.utils.data.distributed
 import torchvision.transforms as transforms
 from torchvision.datasets.cifar import CIFAR10
 from utils import progress_bar, summary
-from models import *
+# from models import *
+from hardcodedmodels import *
 from torch.optim.lr_scheduler import MultiStepLR
 
 try_no = 5
@@ -39,7 +40,8 @@ if __name__ == '__main__':
     testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False, num_workers=2)
 
     device = 'cuda'
-    model = HiResC(BasicBlock, [18, 18, 18])
+    # model = HiResC(BasicBlock, [3, 3, 3])
+    model = HiResC(1)
     model = torch.nn.DataParallel(model).cuda()
     summary((3, 32, 32), model)
     criterion = nn.CrossEntropyLoss().cuda()
