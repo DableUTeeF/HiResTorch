@@ -16,11 +16,11 @@ from resnet20 import ResNet, BasicBlock
 # from hardcodedmodels import *
 from torch.optim.lr_scheduler import MultiStepLR
 
-try_no = ['r20-swish']
+try_no = ['r20-swish', 'r20-relu', 'r20-elu', 'r20-lrelu', 'r20-linear']
+activate = ['swish', 'relu', 'elu', 'lrelu', 'linear']
 # mods = [HiResC([18, 18, 18]), ResNet(BasicBlock, [18, 18, 18])]
 
 if __name__ == '__main__':
-    log = {'acc': [], 'loss': [], 'val_acc': [], 'val_loss': []}
     best_acc = 0
     start_epoch = 1
     transform_train = transforms.Compose([
@@ -43,8 +43,9 @@ if __name__ == '__main__':
 
     device = 'cuda'
     for elm in range(len(try_no)):
+        log = {'acc': [], 'loss': [], 'val_acc': [], 'val_loss': []}
         n = try_no[elm]
-        model = ResNet(BasicBlock, [2, 2, 2])
+        model = ResNet(BasicBlock, [2, 2, 2], activation=activate[elm])
         # model = HiResC(1)
         model = torch.nn.DataParallel(model).cuda()
         # summary((3, 32, 32), model)
@@ -53,7 +54,7 @@ if __name__ == '__main__':
                                     momentum=0.9,
                                     weight_decay=1e-6, nesterov=True)
         # first_scheduler = MultiStepLR(optimizer, milestones=[2], gamma=10)
-        scheduler = MultiStepLR(optimizer, milestones=[150, 225])
+        scheduler = MultiStepLR(optimizer, milestones=[100, 175])
         cudnn.benchmark = True
 
         def train(epoch):
@@ -77,7 +78,7 @@ if __name__ == '__main__':
                 total += targets.size(0)
                 correct += predicted.eq(targets).sum().item()
 
-                progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%%'
+                progress_bar(batch_idx, len(trainloader), 'loss: %.3f, acc: %.3f%%'
                     % (train_loss/(batch_idx+1), 100.*correct/total))
             log['acc'].append(100.*correct/total)
             log['loss'].append(train_loss/(batch_idx+1))
@@ -99,7 +100,7 @@ if __name__ == '__main__':
                     total += targets.size(0)
                     correct += predicted.eq(targets).sum().item()
 
-                    progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%%'
+                    progress_bar(batch_idx, len(testloader), 'loss: %.3f, acc: %.3f%%'
                         % (test_loss/(batch_idx+1), 100.*correct/total))
             log['val_acc'].append(100.*correct/total)
             log['val_loss'].append(test_loss/(batch_idx+1))
@@ -119,7 +120,7 @@ if __name__ == '__main__':
                 best_acc = acc
 
 
-        for epoch in range(start_epoch, start_epoch+300):
+        for epoch in range(start_epoch, start_epoch+200):
             train(epoch)
             test(epoch)
         with open('log/try_{}.json'.format(n), 'w') as wr:
