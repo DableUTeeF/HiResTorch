@@ -5,6 +5,6 @@
 |sigmoid(x) + x  |1m19s             |93.26@141      |
 |Linear          |                  |" "            |
 |ReLU            |                  |               |
-|ELU\alpha=1     |                  |               |
+|ELU$\alpha$=1     |                  |               |
 |Leaky ReLU      |                  |               |
 
