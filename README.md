@@ -2,10 +2,9 @@
 ## Activation functions comparison
 |       Act      |Runtime/epch      |Accuracy       |
 |----------------|------------------|---------------|
-|sigmoid(x) + x  |1m19s             |93.13@116      |
+|sigmoid(x) + x  |1m19s             |93.26@141      |
 |Linear          |                  |" "            |
-|PReLU           |                  |               |
 |ReLU            |                  |               |
-|ELU             |                  |               |
+|ELU\alpha=1     |                  |               |
 |Leaky ReLU      |                  |               |
 
