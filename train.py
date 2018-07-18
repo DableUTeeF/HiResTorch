@@ -1,5 +1,6 @@
 from __future__ import print_function
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -15,8 +16,8 @@ from resnet20 import ResNet, BasicBlock
 # from hardcodedmodels import *
 from torch.optim.lr_scheduler import MultiStepLR
 
-try_no = [7, '110']
-mods = [HiResC([18, 18, 18]), ResNet(BasicBlock, [18, 18, 18])]
+try_no = ['r20-swish']
+# mods = [HiResC([18, 18, 18]), ResNet(BasicBlock, [18, 18, 18])]
 
 if __name__ == '__main__':
     log = {'acc': [], 'loss': [], 'val_acc': [], 'val_loss': []}
@@ -35,15 +36,15 @@ if __name__ == '__main__':
     ])
 
     trainset = CIFAR10(root='/home/palm/PycharmProjects/DATA/cifar10', train=True, download=True, transform=transform_train)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, shuffle=True, num_workers=2)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=128, shuffle=True, num_workers=0)
 
     testset = CIFAR10(root='/home/palm/PycharmProjects/DATA/cifar10', train=False, download=True, transform=transform_test)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False, num_workers=2)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False, num_workers=0)
 
     device = 'cuda'
     for elm in range(len(try_no)):
         n = try_no[elm]
-        model = mods[elm]
+        model = ResNet(BasicBlock, [2, 2, 2])
         # model = HiResC(1)
         model = torch.nn.DataParallel(model).cuda()
         # summary((3, 32, 32), model)
@@ -51,11 +52,13 @@ if __name__ == '__main__':
         optimizer = torch.optim.SGD(model.parameters(), 1e-2,
                                     momentum=0.9,
                                     weight_decay=1e-6, nesterov=True)
+        # first_scheduler = MultiStepLR(optimizer, milestones=[2], gamma=10)
         scheduler = MultiStepLR(optimizer, milestones=[150, 225])
         cudnn.benchmark = True
 
         def train(epoch):
             print('\nEpoch: %d' % epoch)
+            # first_scheduler.step()
             scheduler.step()
             model.train()
             train_loss = 0

@@ -13,6 +13,10 @@ import torch.nn.functional as F
 from torch.optim.lr_scheduler import MultiStepLR
 
 
+def swish(x):
+    return F.sigmoid(x) * x
+
+
 class BasicBlock(nn.Module):
     expansion = 1
 
@@ -31,10 +35,12 @@ class BasicBlock(nn.Module):
             )
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.bn1(self.conv1(x))
+        out = swish(out)
         out = self.bn2(self.conv2(out))
+        out = swish(out)
         out += self.shortcut(x)
-        out = F.relu(out)
+        out = out
         return out
 
 
@@ -87,7 +93,8 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
+        out = self.bn1(self.conv1(x))
+        out = swish(out)
         out = self.layer1(out)
         out = self.layer2(out)
         out = self.layer3(out)
